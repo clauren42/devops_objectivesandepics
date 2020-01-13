@@ -13,7 +13,13 @@ try:
     ws = Workspace.from_config()
 except Exception as e:
     print(f"error {e} getting get AzureML Workspace")
-    ws = None
+    print("trying run")
+    try:
+        from azureml.core import Run
+        ws = Run.get_context().experiment.workspace
+    except Exception as e:
+        print(f"error {e} getting get AzureML Workspace")
+        ws = None
 
 IMPORT_FIELDS = ['id', 'rev', 'AreaPath', 'TeamProject', 'IterationPath', 'WorkItemType', 'State', 'Reason', 'AssignedTo', 'CreatedDate', 'CreatedBy', 'ChangedDate', 'ChangedBy', 'CommentCount', 'Title', 'StateChangeDate', 'Priority', 'Tags', ]
 
