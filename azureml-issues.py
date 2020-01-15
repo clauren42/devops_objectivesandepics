@@ -132,6 +132,7 @@ def load_open(output_path):
         wi_dict['ws20ga'] = 1 if ('ws20ga' in tags) else 0
         wi_dict['customer'] = 1 if ('customer' in tags) else 0
         wi_dict['target_month'] = target_month(wi_dict['IterationPath'])
+        wi_dict['triaged'] = 0 if (wi_dict['target_month'] is None) else 1
         work_items_array.append(wi_dict)
 
 
@@ -183,7 +184,7 @@ def analyze_bugs(data_path):
     #df = pd.merge(df, gems, how='left', on=['AreaPath'])    
     #grouped = df.fillna('nan')[['import_date', 'GEM', 'EM', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days', 'Age']].groupby(['import_date', 'GEM', 'EM', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days'])
 
-    grouped = df.fillna('nan')[['import_date', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days', 'papercut', 'ws20ga', 'customer', 'Age']].groupby(['import_date', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days', 'papercut', 'ws20ga', 'customer'])
+    grouped = df.fillna('nan')[['import_date', 'target_month', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days', 'papercut', 'ws20ga', 'customer', 'Age']].groupby(['import_date', 'target_month', 'main_area', 'sub_area', 'State', 'Priority', 'over30days', 'over60days', 'papercut', 'ws20ga', 'customer'])
     aggregated = grouped.size().reset_index(name='counts')
 
     age = grouped.sum().reset_index()['Age']

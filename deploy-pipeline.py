@@ -76,7 +76,7 @@ print(published_pipeline.id)
 
 from azureml.pipeline.core.schedule import ScheduleRecurrence, Schedule
 
-recurrence = ScheduleRecurrence(frequency="Hour", interval=1) 
+recurrence = ScheduleRecurrence(frequency="Hour", interval=1, start_time="2020-01-13T12:55:00") 
 
 schedule = Schedule.create(workspace=ws, name="Bug_Stats",
                            pipeline_id=published_pipeline.id, 
