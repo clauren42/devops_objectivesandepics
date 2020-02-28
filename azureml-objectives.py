@@ -2,7 +2,7 @@ import csv
 import time
 from datetime import datetime, date, timedelta
 import argparse, os
-from devops_connection import get_query_papercuts, get_connstrings, get_devopsconnection, get_query_ids, get_work_items
+from devops_connection import get_queryTrackingEpics, get_query_objectives, get_connstrings, get_devopsconnection, get_query_ids, get_work_items
 from utils import html2text
 import argparse, os
 import pandas as pd
@@ -24,7 +24,7 @@ except Exception as e:
 IMPORT_FIELDS = ['id', 'rev', 'AreaPath', 'TeamProject', 'IterationPath', 'WorkItemType', 'State', 'Reason', 'AssignedTo', 'CreatedDate', 'CreatedBy', 'ChangedDate', 'ChangedBy', 'CommentCount', 'Title', 'StateChangeDate', 'Priority', 'Tags', ]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data_path", help="path to which the bug files are written and from which they are read", required=True)
+parser.add_argument("--data_path", help="path to which the bug files are written and from which they are read", default='./outputs/')
 parser.add_argument('--load_open', dest='load_open', action='store_true')
 parser.add_argument('--no-load_open', dest='load_open', action='store_false')
 parser.set_defaults(load_open=False)
@@ -39,70 +39,25 @@ args = parser.parse_args()
 
 elements = pd.read_csv('elements.csv')
 
-def area(path):
-    split = path.split('\\')
-    sub_area = split[-1]
-    if len(split)>1:
-        main_area = split[1]
-    else:
-        main_area = split[0]
-    return (main_area, sub_area)
 
-def format_name(user):
-    if user is None:
-        return None
-    else:
-        return user['displayName'] + " <" + user['uniqueName'] + ">"
-
-def year_for_element(element):
-    if element == 'Vibranium':
-        return 2019
-        
-    number = elements.query(f"Element=='{element}'").AtomicNumber
-    if len(number) != 1:
-        return None
-    else:
-        return ((int(number)-1)//2)+2008
-
-def target_month(iteration_path):
-    segments = iteration_path.split('\\')
-    if len(segments) < 3:
-        return None
-    
-    year = year_for_element(segments[1])
-    if year is None:
-        return None
-
-    try:
-        month = int(segments[2][:2])
-    except:
-        return None
-
-    return date(year, month, 1)
-
-def load_open(output_path):
-    print("running load_open")
-    try:  
-        os.mkdir(output_path)
-    except OSError:  
-        print ("Creation of the directory %s failed" % output_path)
 
     project = get_connstrings()
+    project = project[0]
     
-    if ws is None:
-        project['token'] = os.getenv(project['tokenName'])
-    else: 
-        project['token'] = ws.get_default_keyvault().get_secret(project['tokenName'])
+    #if ws is None:
+    #    project['token'] = os.getenv(project['tokenName'])
+    #else: 
+    #    project['token'] = ws.get_default_keyvault().get_secret(project['tokenName'])
 
     conn = get_devopsconnection(project)
 
     start_time = time.time()
 
-    print ("Getting Papercuts")
-    bugids = get_query_ids(conn, get_query_papercuts())
-    work_items = get_work_items(conn, bugids)
-    print("Papercuts: ", len(work_items))
-    print("Papercuts import time: ", time.time() - start_time)  
+    print ("Getting Objectives")
+    ids = get_query_ids(conn, get_queryTrackingEpics())
+    work_items = get_work_items(conn, ids)
+    print("Objectives: ", len(work_items))
+    print("Objectives import time: ", time.time() - start_time)  
 
 
     from datetime import datetime

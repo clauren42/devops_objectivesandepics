@@ -1,0 +1,10 @@
+OwningTeam,Area
+AEther,Pipelines
+AIFrameworks/ONNX,Training Runtime
+AITraining,Compute
+AITraining/WorkspaceRP,Workspace Management
+DPrepServices,Data4ML
+ExperimentationService,Training
+Inferencing/O16N,Inference
+MachineLearningComputeAndBilling,Compute
+UX,Core UI

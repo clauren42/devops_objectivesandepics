@@ -8,7 +8,7 @@
             "name": "load_open and analyze",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceRoot}/azureml-issues.py",
+            "program": "${workspaceRoot}/driver.py",
             "args": [
                 "--data_path",
                 "data",

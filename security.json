@@ -1,7 +1,7 @@
-{  
-    "id":"Vienna",
-    "url":"https://msdata.visualstudio.com",  
-    "tokenName":"DevopsTokenJamie",
-    "statusField":"AlgorithmsandDataScience.Status",
-    "epicStatusField":"Custom.EpicStatus"
-}
+[
+    {  
+        "id":"Vienna",
+        "url":"https://msdata.visualstudio.com",  
+        "token": "ldd2u7m66xdq4niqjgunikeowvicg44aaro7eaalijktkdtjnc2q"
+    }
+]  

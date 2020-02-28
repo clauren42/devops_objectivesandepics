@@ -34,6 +34,30 @@ def get_query_papercuts():
     """
     return query
 
+def get_query_objectives():
+    query = """
+    SELECT
+        [System.Id],
+        [System.CreatedDate],
+        [System.Title],
+        [System.CreatedBy],
+        [System.State],
+        [Microsoft.VSTS.Common.Priority],
+        [System.AreaPath],
+        [System.AssignedTo],
+        [System.Tags],
+        [System.IterationPath]
+    FROM workitems
+    WHERE
+        [System.TeamProject] = 'Vienna'
+        AND (
+            [System.WorkItemType] = 'Objective'
+            AND [System.State] <> 'Removed'
+        )
+    ORDER BY [System.AreaPath]
+    """
+    return query
+
 def get_queryTrackingEpics():
     query = """
     SELECT
@@ -44,7 +68,12 @@ def get_queryTrackingEpics():
             [System.TeamProject] = 'Vienna'
             AND [System.WorkItemType] = 'Epic'
             AND [System.State] <> 'Removed'
-            AND [System.Tags] CONTAINS 'Tracking'
+            AND (
+                [System.IterationPath] UNDER 'Vienna\Manganese'
+                OR [System.IterationPath] UNDER 'Vienna\Vibranium'
+                OR [System.IterationPath] UNDER 'Vienna\Backlog'
+                OR [System.IterationPath] = 'Vienna'
+            )
         )
     ORDER BY [System.Id]
     """
@@ -56,10 +85,18 @@ def get_query210():
     SELECT 
             [System.Id]
     FROM workitems
-    WHERE
+    WHERE   
+        (
             [System.TeamProject] = 'Vienna'
             AND [System.State] <> 'Removed'
             AND [System.Tags] CONTAINS '2x10'
+            AND (
+                [System.IterationPath] UNDER 'Vienna\Manganese'
+                OR [System.IterationPath] UNDER 'Vienna\Vibranium'
+                OR [System.IterationPath] UNDER 'Vienna\Backlog'
+                OR [System.IterationPath] = 'Vienna'
+            )
+        )
     ORDER BY [System.Id] 
     """
 

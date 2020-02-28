@@ -1,0 +1,78 @@
+let OwningTenants = dynamic(['Project Vienna Services','Matrix','AEther'])
+; 
+let areamap = 
+datatable (OwningTeamName:string , Area:string, Org:string)
+    ["PROJECTVIENNASERVICES\\MLOps","MLOps", "AML",
+    "PROJECTVIENNASERVICES\\AITraining","Compute","AML",
+    "PROJECTVIENNASERVICES\\ExperimentationService","Training","AML",
+    "PROJECTVIENNASERVICES\\DatatoAI","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\DPrepServices","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\MachineLearningComputeAndBilling","Workspace Management","AML",
+    "PROJECTVIENNASERVICES\\UX","Core UI","AML",
+    "PROJECTVIENNASERVICES\\Infrastructure","Infrastructure","AML",
+    "PROJECTVIENNASERVICES\\AEther","Pipelines","AML",
+    "PROJECTVIENNASERVICES\\AMLAnalytics","EPR","AML",
+    "PROJECTVIENNASERVICES\\Inferencing/O16N","Inference","AML",
+    "PROJECTVIENNASERVICES\\DataDrift","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\Data4ML","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\AITraining/WorkspaceRP","Workspace Management","AML",
+    "PROJECTVIENNASERVICES\\Data4ML_China","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\DataLabeling","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\AITraining/Estimators","Training","AML",
+    "PROJECTVIENNASERVICES\\NotebookVM","Training","AML",
+    "PROJECTVIENNASERVICES\\LivesiteTelemetry","EPR","AML",
+    "PROJECTVIENNASERVICES\\ResponsibleAI","Responsible AI","AML",
+    "PROJECTVIENNASERVICES\\TelemetryClassification","EPR","AML",
+    "PROJECTVIENNASERVICES\\DPrepEngine","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\MLReliabilityTempTesting","EPR","AML",
+    "PROJECTVIENNASERVICES\\AIFrameworks/ONNX","Training Runtime","AML",
+    "PROJECTVIENNASERVICES\\ExperimentationUX","Training","AML",
+    "PROJECTVIENNASERVICES\\DPrepUX","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\DataForAML-EDA","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\AzureDataLabeling","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\Inferencing/BatchInference","Inference","AML",
+    "PROJECTVIENNASERVICES\\TrainingWorkloads","Training","AML",
+    "PROJECTVIENNASERVICES\\DataLabelingIncidentManager","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\RSDK9814C9B1F7284614A54E0693DB7F2C66","Training","AML",
+    "PROJECTVIENNASERVICES\\Designer","Designer","AML",
+    "PROJECTVIENNASERVICES\\AutoML-IncidentManager","AutoML","AML",
+    "PROJECTVIENNASERVICES\\Data4MLIncidentManagerF367D9BBFFAF4DF1AF6824B3C6EDEE3C","Data4ML","AML",
+    "PROJECTVIENNASERVICES\\ReinforcementLearning","Reinforcement Learning","AML",
+    "EXCHANGE\\MarsSDKTeam", "MARS","Substrate",
+    "EXCHANGE\\EuclidCompute", "Substrate Compute", "Substrate",
+    "EXCHANGE\\EuclidAI", "EuclidAI", "Substrate",
+    "DMOFFICEDATA\\ODINMLHomePool", "ODIN-ML","Substrate",
+    "EXCHANGE\\MarsDataManagement",  "MARS","Substrate",
+    "EXCHANGE\\SubstrateIntelligence-Compute", "Substrate Compute","Substrate",
+    "EXCHANGE\\MARS", "MARS","Substrate",
+    "AETHER\\Triage", "Pipelines", "AML",
+    "MATRIXDEEPLEARNINGPLATFORM\\Triage", "Compute", "AML",
+    "AETHER\\AE365", "Pipelines", "AML"
+]
+;
+let OwningTeams = 
+areamap
+| distinct OwningTeamName
+;
+let incidents = 
+Incidents
+| where CreateDate >todatetime('9/1/2019')
+| where OwningTenantName in (OwningTenants) or OwningTeamName in (OwningTeams)
+| where SourceOrigin == 'Customer' or SourceName =='ICMPortal'
+| summarize (TimeStamp, IncidentType, IncidentSubType, Title, CustomerName, OwningTeamName, ResponsibleTeamName, OwningTenantName, OwningTenantId, CreateDate, SourceType, SourceName, OwningContactAlias, ParentIncidentId, Status, Severity, ResolveDate, MitigateDate, Mitigation, Keywords, ImpactStartDate, HowFixed, ResponsibleTenantName, SubscriptionId, OriginatingTenantName) = arg_max(Lens_IngestionTime, IncidentType, IncidentSubType, Title, CustomerName, OwningTeamName, ResponsibleTeamName, OwningTenantName, OwningTenantId, CreateDate, SourceType, SourceName, OwningContactAlias, ParentIncidentId, Status, Severity, ResolveDate, MitigateDate, Mitigation, Keywords, ImpactStartDate, HowFixed, ResponsibleTenantName, SubscriptionId, OriginatingTenantName) by IncidentId
+| project IncidentId, IncidentType, IncidentSubType, Title, CustomerName, OwningTeamName, ResponsibleTeamName, OwningTenantName, OwningTenantId, CreateDate, SourceType, SourceName, OwningContactAlias, ParentIncidentId, Status, Severity, ResolveDate, MitigateDate, Mitigation, Keywords, ImpactStartDate, HowFixed, ResponsibleTenantName, SubscriptionId, OriginatingTenantName
+;
+let incidentsbyarea =  
+incidents
+| join kind=leftouter (areamap) on OwningTeamName
+| extend KeyCustomer = case(
+                            Org == 'Substrate', 'Office',
+                            OwningTeamName contains "Matrix", "Office",
+                            Title contains "SubstrateML", "Office",
+                            Title contains "Office", "Office", 
+                            Title contains "OXO", "Office", 
+                            CustomerName contains "Daimler", "Daimler",
+                            "")
+| project IncidentId, IncidentType, KeyCustomer, Area, Org, Title, CustomerName, OwningTeamName, ResponsibleTeamName, OwningTenantName, OwningTenantId, CreateDate, SourceType, SourceName, OwningContactAlias, ParentIncidentId, Status, Severity, ResolveDate, MitigateDate, Mitigation, Keywords, ImpactStartDate, HowFixed, ResponsibleTenantName, SubscriptionId, OriginatingTenantName
+;
+incidentsbyarea  
